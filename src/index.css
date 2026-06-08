@@ -1,11 +1,13 @@
 :root {
-  --bg: #0d1117;
-  --card: #161b22;
-  --ink: #e6edf3;
+  --bg: #f2f2f7;
+  --card: #ffffff;
+  --ink: #1c1c1e;
   --lime: #7ee787;
-  --muted: #8b949e;
-  --border: #30363d;
-  --danger: #f85149;
+  --lime-dark: #28a745;
+  --lime-surface: #e8f5e9;
+  --muted: #6c6c70;
+  --border: #e5e7eb;
+  --danger: #ef4444;
 }
 
 *, *::before, *::after {
@@ -33,8 +35,9 @@ body {
 }
 
 input[type="date"]::-webkit-calendar-picker-indicator {
-  filter: invert(0.6);
+  filter: none;
   cursor: pointer;
+  opacity: 0.5;
 }
 
 select option {
@@ -43,6 +46,6 @@ select option {
 }
 
 :focus-visible {
-  outline: 2px solid var(--lime);
+  outline: 2px solid var(--lime-dark);
   outline-offset: 2px;
 }

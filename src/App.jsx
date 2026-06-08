@@ -1,4 +1,8 @@
 import { useState, useEffect, useRef } from 'react'
+import Lottie from 'lottie-react'
+import fireData from './animations/fire.json'
+import fireworksData from './animations/fireworks.json'
+import trophyData from './animations/trophy.json'
 
 const STORAGE_KEY = 'fitness:data:v1'
 const today = () => new Date().toISOString().split('T')[0]
@@ -34,16 +38,16 @@ function loadData() {
 const s = {
   card: {
     background: 'var(--card)',
-    borderRadius: 12,
+    borderRadius: 16,
     padding: '14px 16px',
     marginBottom: 12,
-    border: '1px solid var(--border)',
+    boxShadow: '0 1px 3px rgba(0,0,0,0.08), 0 4px 12px rgba(0,0,0,0.04)',
   },
   input: {
     width: '100%',
     background: 'var(--bg)',
-    border: '1px solid var(--border)',
-    borderRadius: 8,
+    border: '1.5px solid var(--border)',
+    borderRadius: 10,
     color: 'var(--ink)',
     padding: '10px 12px',
     fontFamily: 'DM Mono, monospace',
@@ -63,23 +67,23 @@ const s = {
   },
   btnPrimary: {
     background: 'var(--lime)',
-    color: '#0d1117',
+    color: '#1c1c1e',
     border: 'none',
-    borderRadius: 8,
-    padding: '12px 20px',
+    borderRadius: 12,
+    padding: '13px 20px',
     fontFamily: 'Barlow Condensed, sans-serif',
     fontWeight: 700,
     fontSize: 16,
     letterSpacing: '0.05em',
     cursor: 'pointer',
     width: '100%',
-    minHeight: 44,
+    minHeight: 48,
   },
   btnGhost: {
-    background: 'transparent',
+    background: 'var(--card)',
     color: 'var(--muted)',
-    border: '1px solid var(--border)',
-    borderRadius: 8,
+    border: '1.5px solid var(--border)',
+    borderRadius: 12,
     padding: '10px 16px',
     fontFamily: 'Barlow Condensed, sans-serif',
     fontWeight: 600,
@@ -95,7 +99,7 @@ const s = {
   deleteBtn: {
     background: 'none',
     border: 'none',
-    color: 'var(--muted)',
+    color: '#d1d5db',
     cursor: 'pointer',
     fontSize: 20,
     lineHeight: 1,
@@ -173,8 +177,8 @@ function ExerciseSearch({ library, onAdd }) {
         <div style={{
           position: 'absolute', top: '100%', left: 0, right: 0,
           background: 'var(--card)', border: '1px solid var(--border)',
-          borderRadius: 8, zIndex: 200, overflow: 'hidden',
-          boxShadow: '0 8px 24px rgba(0,0,0,0.6)',
+          borderRadius: 12, zIndex: 200, overflow: 'hidden',
+          boxShadow: '0 8px 32px rgba(0,0,0,0.12), 0 2px 8px rgba(0,0,0,0.06)',
           maxHeight: 220, overflowY: 'auto',
         }}>
           {matches.map(name => (
@@ -201,11 +205,18 @@ function ExerciseTracker({ exercise, onChange, onRemove }) {
   const [kg, setKg] = useState(lastWeight)
   const [reps, setReps] = useState('')
   const [collapsed, setCollapsed] = useState(false)
+  const [showPR, setShowPR] = useState(false)
   const repsRef = useRef(null)
 
   function confirmSet() {
     if (!kg && !reps) return
+    const newKg = Number(kg) || 0
+    const maxKg = exercise.sets.length > 0 ? Math.max(...exercise.sets.map(s => Number(s.weight) || 0)) : 0
     onChange({ ...exercise, sets: [...exercise.sets, { weight: kg, reps }] })
+    if (exercise.sets.length > 0 && newKg > maxKg) {
+      setShowPR(true)
+      setTimeout(() => setShowPR(false), 3200)
+    }
     setReps('')
     setTimeout(() => repsRef.current?.focus(), 30)
   }
@@ -218,7 +229,15 @@ function ExerciseTracker({ exercise, onChange, onRemove }) {
   const maxWeight = hasSets ? Math.max(...exercise.sets.map(s => Number(s.weight) || 0)) : 0
 
   return (
-    <div style={{ ...s.card, marginBottom: 10 }}>
+    <div style={{ ...s.card, marginBottom: 10, position: 'relative', overflow: 'hidden' }}>
+      {showPR && (
+        <div style={{ position: 'absolute', inset: 0, zIndex: 20, pointerEvents: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <Lottie animationData={fireworksData} loop={false} style={{ width: '100%', height: '100%', position: 'absolute', inset: 0 }} />
+          <div style={{ position: 'relative', zIndex: 1, background: 'var(--lime)', borderRadius: 20, padding: '6px 16px', display: 'flex', alignItems: 'center', gap: 8 }}>
+            <span style={{ fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 700, fontSize: 22, color: '#1c1c1e', letterSpacing: '0.04em' }}>NEW PR!</span>
+          </div>
+        </div>
+      )}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <button
           type="button"
@@ -256,10 +275,10 @@ function ExerciseTracker({ exercise, onChange, onRemove }) {
                 <span style={{ width: 28, textAlign: 'center', fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 700, fontSize: 14, color: 'var(--muted)', flexShrink: 0 }}>
                   {i + 1}
                 </span>
-                <div style={{ flex: 1, background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: 6, padding: '7px 4px', textAlign: 'center', fontFamily: 'DM Mono, monospace', fontSize: 14, color: 'var(--ink)' }}>
+                <div style={{ flex: 1, background: 'var(--bg)', border: '1.5px solid var(--border)', borderRadius: 8, padding: '7px 4px', textAlign: 'center', fontFamily: 'DM Mono, monospace', fontSize: 14, color: 'var(--ink)', fontWeight: 500 }}>
                   {set.weight || '—'}
                 </div>
-                <div style={{ flex: 1, background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: 6, padding: '7px 4px', textAlign: 'center', fontFamily: 'DM Mono, monospace', fontSize: 14, color: 'var(--ink)' }}>
+                <div style={{ flex: 1, background: 'var(--bg)', border: '1.5px solid var(--border)', borderRadius: 8, padding: '7px 4px', textAlign: 'center', fontFamily: 'DM Mono, monospace', fontSize: 14, color: 'var(--ink)', fontWeight: 500 }}>
                   {set.reps || '—'}
                 </div>
                 <button type="button" onClick={() => removeSet(i)} style={{ ...s.deleteBtn, width: 36, minWidth: 36, padding: 0 }}>×</button>
@@ -282,7 +301,7 @@ function ExerciseTracker({ exercise, onChange, onRemove }) {
           value={kg}
           onChange={e => setKg(e.target.value)}
           onKeyDown={e => e.key === 'Enter' && repsRef.current?.focus()}
-          style={{ ...s.input, flex: 1, marginBottom: 0, textAlign: 'center', padding: '9px 4px', borderColor: 'rgba(126,231,135,0.4)' }}
+          style={{ ...s.input, flex: 1, marginBottom: 0, textAlign: 'center', padding: '9px 4px', borderColor: 'var(--lime-dark)', borderWidth: '2px' }}
         />
         <input
           ref={repsRef}
@@ -338,7 +357,7 @@ function SessionCard({ session, onUpdate, onDelete, exerciseLibrary }) {
         />
       ))}
 
-      <div style={{ ...s.card, background: 'transparent', border: '1px dashed var(--border)', marginBottom: 0 }}>
+      <div style={{ ...s.card, background: 'transparent', border: '1.5px dashed #d1d5db', boxShadow: 'none', marginBottom: 0 }}>
         <label style={s.label}>Add Exercise</label>
         <ExerciseSearch library={exerciseLibrary} onAdd={addExercise} />
       </div>
@@ -421,6 +440,38 @@ function MonthGrid({ year, month, selectedDate, workoutDates, onDayClick }) {
   )
 }
 
+// ── AppHeader — white fitness-style header with avatar
+function AppHeader({ workouts }) {
+  const todayCount = workouts.filter(w => w.date === today()).length
+  return (
+    <header style={{
+      padding: '10px 20px',
+      position: 'sticky', top: 0, zIndex: 10,
+      background: 'var(--bg)',
+      borderBottom: '1px solid var(--border)',
+      display: 'flex', alignItems: 'center', gap: 14, minHeight: 74,
+    }}>
+      {/* Avatar */}
+      <div style={{ width: 62, height: 62, borderRadius: '50%', overflow: 'hidden', flexShrink: 0 }}>
+        <img src="/avatar.jpg" alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: '50% 15%' }} />
+      </div>
+
+      {/* Name + status */}
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 700, fontSize: 20, color: '#111827', textTransform: 'uppercase', letterSpacing: '0.06em', lineHeight: 1 }}>
+          Khashayar
+        </div>
+        <div style={{ fontFamily: 'DM Mono, monospace', fontSize: 11, color: '#6b7280', marginTop: 3 }}>
+          {todayCount > 0 ? `${todayCount} session${todayCount > 1 ? 's' : ''} today` : 'ready to train?'}
+        </div>
+      </div>
+
+      {/* Fire animation accent */}
+      <Lottie animationData={fireData} loop style={{ width: 52, height: 52, flexShrink: 0 }} />
+    </header>
+  )
+}
+
 // ── CalendarView — full calendar + day sessions
 function CalendarView({ workouts, onAddSession, onUpdateSession, onDeleteSession, exerciseLibrary }) {
   const now = new Date()
@@ -482,6 +533,10 @@ function CalendarView({ workouts, onAddSession, onUpdateSession, onDeleteSession
           {dateLabel}
         </h2>
       </div>
+
+      {daySessions.length === 0 && (
+        <p style={{ ...s.meta, textAlign: 'center', padding: '24px 0 20px' }}>No sessions yet. Start one below.</p>
+      )}
 
       {/* Sessions for selected day */}
       {daySessions.map(session => (
@@ -579,7 +634,7 @@ function MealsView({ meals, onAdd, onDelete }) {
         </div>
       )}
       {meals.length === 0 ? (
-        <p style={{ ...s.meta, textAlign: 'center', marginTop: 48, fontSize: 13 }}>No meals logged yet.</p>
+        <p style={{ ...s.meta, textAlign: 'center', padding: '48px 0' }}>No meals logged yet.</p>
       ) : (
         meals.map(m => (
           <div key={m.id} style={s.card}>
@@ -638,9 +693,10 @@ function ProgressView({ workouts }) {
             {selected}
           </h2>
           {data.pr && data.pr.weight > 0 && (
-            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, marginTop: 10, background: 'var(--bg)', border: '1px solid var(--lime)', borderRadius: 6, padding: '5px 12px' }}>
-              <span style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 12, color: 'var(--lime)', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase' }}>PR</span>
-              <span style={{ fontFamily: 'DM Mono, monospace', fontSize: 14, color: 'var(--ink)' }}>{data.pr.weight}kg × {data.pr.reps}</span>
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 4, marginTop: 10, background: 'var(--lime-surface)', border: '1.5px solid var(--lime)', borderRadius: 20, padding: '4px 14px 4px 4px' }}>
+              <Lottie animationData={trophyData} loop={false} style={{ width: 36, height: 36, flexShrink: 0 }} />
+              <span style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 11, color: '#1b5e20', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase' }}>PR</span>
+              <span style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 20, fontWeight: 700, color: 'var(--ink)', letterSpacing: '-0.5px', marginLeft: 4 }}>{data.pr.weight}kg × {data.pr.reps}</span>
             </div>
           )}
         </div>
@@ -667,9 +723,7 @@ function ProgressView({ workouts }) {
   return (
     <div>
       {exercises.length === 0 ? (
-        <p style={{ ...s.meta, textAlign: 'center', marginTop: 48, fontSize: 13 }}>
-          Log workouts with exercises to see your progress here.
-        </p>
+        <p style={{ ...s.meta, textAlign: 'center', padding: '48px 0' }}>Log workouts with exercises to see your progress here.</p>
       ) : (
         exercises.map(name => {
           const data = stats[name]
@@ -700,13 +754,20 @@ function BottomNav({ tab, setTab }) {
     { id: 'progress', label: 'Progress', Icon: IconTrend },
   ]
   return (
-    <nav style={{ position: 'fixed', bottom: 0, left: 0, right: 0, background: 'var(--card)', borderTop: '1px solid var(--border)', display: 'flex', paddingBottom: 'env(safe-area-inset-bottom)', zIndex: 100 }}>
+    <nav style={{
+      position: 'fixed', bottom: 0, left: 0, right: 0,
+      background: 'rgba(255,255,255,0.85)',
+      backdropFilter: 'blur(20px) saturate(180%)',
+      WebkitBackdropFilter: 'blur(20px) saturate(180%)',
+      borderTop: '1px solid rgba(0,0,0,0.06)',
+      display: 'flex', paddingBottom: 'env(safe-area-inset-bottom)', zIndex: 100,
+    }}>
       {tabs.map(({ id, label, Icon }) => {
         const active = tab === id
         return (
           <button key={id} onClick={() => setTab(id)}
-            style={{ flex: 1, background: 'none', border: 'none', cursor: 'pointer', padding: '10px 0', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3, color: active ? 'var(--lime)' : 'var(--muted)', minHeight: 56 }}>
-            <Icon color={active ? 'var(--lime)' : 'var(--muted)'} />
+            style={{ flex: 1, background: 'none', border: 'none', cursor: 'pointer', padding: '10px 0', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3, color: active ? 'var(--lime-dark)' : '#8e8e93', minHeight: 56 }}>
+            <Icon color={active ? 'var(--lime-dark)' : '#8e8e93'} />
             <span style={{ fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 600, fontSize: 11, letterSpacing: '0.08em', textTransform: 'uppercase' }}>{label}</span>
           </button>
         )
@@ -751,11 +812,7 @@ export default function App() {
 
   return (
     <div style={{ maxWidth: 560, margin: '0 auto', minHeight: '100dvh', background: 'var(--bg)', position: 'relative' }}>
-      <header style={{ padding: '14px 20px 12px', borderBottom: '1px solid var(--border)', position: 'sticky', top: 0, background: 'var(--bg)', zIndex: 10 }}>
-        <h1 style={{ fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 700, fontSize: 26, color: 'var(--lime)', margin: 0, letterSpacing: '0.06em', textTransform: 'uppercase' }}>
-          Khashi Fit
-        </h1>
-      </header>
+      <AppHeader workouts={data.workouts} />
       <main style={{ padding: '20px 16px 100px' }}>
         {tab === 'workouts' && (
           <CalendarView
